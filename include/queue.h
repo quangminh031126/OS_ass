@@ -3,7 +3,6 @@
 
 #include "common.h"
 
-#define MAX_QUEUE_SIZE 10
 struct pcb_node
 {
 	struct pcb_t *proc;

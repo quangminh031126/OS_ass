@@ -7,6 +7,7 @@
         "chrono": "c",
         "stdlib.h": "c",
         "queue.h": "c",
-        "cpu.h": "c"
+        "cpu.h": "c",
+        "pthread.h": "c"
     }
 }

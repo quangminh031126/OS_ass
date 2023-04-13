@@ -3,7 +3,6 @@
 #include "timer.h"
 #include "sched.h"
 #include "loader.h"
-
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>

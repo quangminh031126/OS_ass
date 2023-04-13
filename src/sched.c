@@ -1,6 +1,7 @@
 #include "queue.h"
 #include "sched.h"
 #include <pthread.h>
+#define MLQ_SCHED
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -10,43 +10,38 @@ int empty(struct queue_t *q)
 void enqueue(struct queue_t *q, struct pcb_t *proc)
 {
 	/* TODO: put a new process to queue [q] */
-	if (q->size >= MAX_QUEUE_SIZE)
+	struct pcb_node *new_node = (struct pcb_node *)malloc(sizeof(struct pcb_node));
+	new_node->proc = proc;
+	new_node->next = NULL;
+
+	if (q->tail == NULL)
 	{
-		printf("Queue is full");
-		return;
+		q->head = new_node;
+		q->tail = new_node;
 	}
-	q->proc[q->size] = proc;
+	else
+	{
+		q->tail->next = new_node;
+		q->tail = new_node;
+	}
+
 	q->size++;
 }
 
 struct pcb_t *dequeue(struct queue_t *q)
 {
-	// // Find process with highest priority
-	// int highestPrio_index = 0;
-	// for (int i = 1; i < q->size; ++i)
-	// {
-	// 	if (q->proc[i]->priority < q->proc[highestPrio_index]->priority)
-	// 	{
-	// 		highestPrio_index = i;
-	// 	}
-	// }
-
-	// // Remove the process
-	// struct pcb_t *proc = q->proc[highestPrio_index];
-	// for (int i = highestPrio_index; i < q->size - 1; i++)
-	// {
-	// 	q->proc[i] = q->proc[i + 1];
-	// }
-	// q->size--;
-	if (empty(q))
+	if (q->head == NULL)
 		return NULL;
 
-	struct pcb_t *proc = q->proc[0];
-	for (int i = 0; i < q->size - 1; ++i)
-	{
-		q->proc[i] = q->proc[i + 1];
-	}
+	struct pcb_node *first_node = q->head;
+	struct pcb_t *first_proc = first_node->proc;
+
+	q->head = first_node->next;
+	if (q->head == NULL)
+		q->tail = NULL;
+
+	free(first_node);
 	q->size--;
 
-	return proc;
+	return first_proc;
 }
