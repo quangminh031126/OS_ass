@@ -2,7 +2,9 @@
 #include "sched.h"
 #include <pthread.h>
 #define MLQ_SCHED
-
+#ifndef MAX_PRIO
+#define MAX_PRIO 140
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 static struct queue_t ready_queue;
