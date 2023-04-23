@@ -8,6 +8,8 @@
         "stdlib.h": "c",
         "queue.h": "c",
         "cpu.h": "c",
-        "pthread.h": "c"
+        "pthread.h": "c",
+        "__availability": "c",
+        "atomic": "c"
     }
 }

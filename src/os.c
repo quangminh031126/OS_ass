@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 static int time_slot;
 static int num_cpus;
 static int done = 0;
@@ -102,14 +103,18 @@ static void *ld_routine(void *args)
 	int i = 0;
 	while (i < num_processes)
 	{
-		struct pcb_t *proc = load(ld_processes.path[i]);
-		proc->prio = ld_processes.prio[i];
+		struct pcb_t *proc = load(ld_processes.path[i]); // Prio from Process
+		proc->prio = ld_processes.prio[i];				 // Prio from Config
 		while (current_time() < ld_processes.start_time[i])
 		{
 			next_slot(timer_id);
 		}
-		printf("\tLoaded a process at %s, PID: %d PRIO: %ld\n",
-			   ld_processes.path[i], proc->pid, ld_processes.prio[i]);
+		if (ld_processes.prio[i] != UINT32_MAX)
+			printf("\tLoaded a process at %s, PID: %d PRIO: %ld\n",
+				   ld_processes.path[i], proc->pid, ld_processes.prio[i]);
+		else
+			printf("\tLoaded a process at %s, PID: %d PRIO: %u\n",
+				   ld_processes.path[i], proc->pid, proc->priority);
 		add_proc(proc);
 		free(ld_processes.path[i]);
 		i++;
@@ -125,12 +130,15 @@ static void *ld_routine(void *args)
 static void read_config(const char *path)
 {
 	FILE *file;
+	char line[100];
+	int n;
 	if ((file = fopen(path, "r")) == NULL)
 	{
 		printf("Cannot find configure file at %s\n", path);
 		exit(1);
 	}
-	fscanf(file, "%d %d %d\n", &time_slot, &num_cpus, &num_processes);
+	fgets(line, 100, file);
+	sscanf(line, "%d %d %d\n", &time_slot, &num_cpus, &num_processes);
 	ld_processes.path = (char **)malloc(sizeof(char *) * num_processes);
 	ld_processes.start_time = (unsigned long *)
 		malloc(sizeof(unsigned long) * num_processes);
@@ -146,7 +154,12 @@ static void read_config(const char *path)
 		strcat(ld_processes.path[i], "input/proc/");
 		char proc[100];
 #ifdef MLQ_SCHED
-		fscanf(file, "%lu %s %lu\n", &ld_processes.start_time[i], proc, &ld_processes.prio[i]);
+		fgets(line, 100, file);
+		n = sscanf(line, "%lu %s %lu\n", &ld_processes.start_time[i], proc, &ld_processes.prio[i]);
+		if (n == 2)
+		{
+			ld_processes.prio[i] = UINT32_MAX;
+		}
 #else
 		fscanf(file, "%lu %s\n", &ld_processes.start_time[i], proc);
 #endif
