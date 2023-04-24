@@ -51,7 +51,7 @@ static void *cpu_routine(void *args)
 		}
 		else if (proc->pc == proc->code->size)
 		{
-			/* The porcess has finish it job */
+			/* The process has finish it job */
 			printf("\tCPU %d: Processed %2d has finished\n",
 				   id, proc->pid);
 			free(proc);
@@ -61,7 +61,7 @@ static void *cpu_routine(void *args)
 		else if (time_left == 0)
 		{
 			/* The process has done its job in current time slot */
-			printf("\tCPU %d: Put process %2d to run queue\n",
+			printf("\tCPU %d: Put process %2d back to ready queue\n",
 				   id, proc->pid);
 			put_proc(proc);
 			proc = get_proc();
@@ -85,7 +85,10 @@ static void *cpu_routine(void *args)
 		{
 			printf("\tCPU %d: Dispatched process %2d\n",
 				   id, proc->pid);
-			time_left = time_slot;
+			if (proc->prio >= 0 && proc->prio < MAX_PRIO)
+				time_left = MAX_PRIO - proc->prio;
+			else
+				time_left = MAX_PRIO - proc->priority;
 		}
 
 		/* Run current process */

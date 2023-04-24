@@ -6,10 +6,17 @@ int empty(struct queue_t *q)
 {
 	return (q->size == 0);
 }
-
+void init_queue(struct queue_t *q)
+{
+	q->head = NULL;
+	q->tail = NULL;
+	q->size = 0;
+}
 void enqueue(struct queue_t *q, struct pcb_t *proc)
 {
 	/* TODO: put a new process to queue [q] */
+	if (proc == NULL)
+		return;
 	struct pcb_node *new_node = (struct pcb_node *)malloc(sizeof(struct pcb_node));
 	new_node->proc = proc;
 	new_node->next = NULL;
@@ -30,9 +37,10 @@ void enqueue(struct queue_t *q, struct pcb_t *proc)
 
 struct pcb_t *dequeue(struct queue_t *q)
 {
+	// Check if queue is NULL
 	if (q->head == NULL)
 		return NULL;
-
+	// Queue is not NULL
 	struct pcb_node *first_node = q->head;
 	struct pcb_t *first_proc = first_node->proc;
 

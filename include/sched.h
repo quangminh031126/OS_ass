@@ -4,17 +4,14 @@
 #include "common.h"
 #endif
 
-#define MAX_PRIO 140
-
-int queue_empty(void);
+#define MAX_PRIO 25
 
 void init_scheduler(void);
-void finish_scheduler(void);
 
 /* Get the next process from ready queue */
 struct pcb_t *get_proc(void);
 
-/* Put a process back to run queue */
+/* Put a process back to ready queue */
 void put_proc(struct pcb_t *proc);
 
 /* Add a new process to ready queue */
