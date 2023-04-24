@@ -5,38 +5,74 @@
 #ifndef MAX_PRIO
 #define MAX_PRIO 140
 #endif
+#define MAX_QUEUE_SIZE 10
 #include <stdlib.h>
 #include <stdio.h>
-static struct queue_t ready_queue;
-static struct queue_t run_queue;
+static pthread_t _scheduler;
+
 static pthread_mutex_t queue_lock;
-
+static struct queue_t run_queue;
 #ifdef MLQ_SCHED
-static struct queue_t mlq_ready_queue[MAX_PRIO];
-#endif
-
-int queue_empty(void)
+struct mlq_ready_queue
 {
-#ifdef MLQ_SCHED
-	unsigned long prio;
-	for (prio = 0; prio < MAX_PRIO; prio++)
-		if (!empty(&mlq_ready_queue[prio]))
-			return -1;
+	struct queue_t queue[MAX_PRIO];
+	unsigned int size;
+};
+static struct mlq_ready_queue ready_queue;
+#else
+static struct queue_t ready_queue;
 #endif
-	return (empty(&ready_queue) && empty(&run_queue));
-}
 
+// int queue_empty(void)
+// {
+// #ifdef MLQ_SCHED
+// 	unsigned long prio;
+// 	for (prio = 0; prio < MAX_PRIO; prio++)
+// 		if (!empty(&ready_queue.queue[prio]))
+// 			return -1;
+// #else
+// 	return (empty(&ready_queue) && empty(&run_queue));
+// }
+#ifdef MLQ_SCHED
+static void *sched_routine(void *args)
+{
+	struct pcb_t *proc = NULL;
+	int prio;
+	while (1)
+	{
+		for (prio = 0; prio < MAX_PRIO; prio++)
+		{
+			while (!empty(&(ready_queue.queue[prio])))
+			{
+				if (run_queue.size >= MAX_QUEUE_SIZE)
+					continue; // Run queue is full
+
+				// Dequeue MLQ, should be separate function but I'm Lazy. Then put it in the run queue.
+				pthread_mutex_lock(&queue_lock);
+				proc = dequeue(&(ready_queue.queue[prio]));
+				ready_queue.size--;
+
+				enqueue(&run_queue, proc);
+				pthread_mutex_unlock(&queue_lock);
+			}
+		}
+		pthread_testcancel();
+	}
+	pthread_exit(NULL);
+}
+#endif
 void init_scheduler(void)
 {
 #ifdef MLQ_SCHED
 	int i;
 
 	for (i = 0; i < MAX_PRIO; i++)
-		mlq_ready_queue[i].size = 0;
+		init_queue(&(ready_queue.queue[i]));
 #endif
 	ready_queue.size = 0;
 	run_queue.size = 0;
 	pthread_mutex_init(&queue_lock, NULL);
+	pthread_create(&_scheduler, NULL, sched_routine, NULL);
 }
 
 #ifdef MLQ_SCHED
@@ -49,19 +85,12 @@ void init_scheduler(void)
 struct pcb_t *get_mlq_proc(void)
 {
 	struct pcb_t *proc = NULL;
-	/*TODO: get a process from PRIORITY [ready_queue].
+	/*TODO: get a process from running queue
 	 * Remember to use lock to protect the queue.
 	 * */
 
 	pthread_mutex_lock(&queue_lock);
-	for (int i = 0; i < MAX_PRIO; ++i)
-	{
-		if (!empty(&mlq_ready_queue[i]))
-		{
-			proc = dequeue(&mlq_ready_queue[i]);
-			break;
-		}
-	}
+	proc = dequeue(&run_queue);
 	pthread_mutex_unlock(&queue_lock);
 
 	return proc;
@@ -69,21 +98,23 @@ struct pcb_t *get_mlq_proc(void)
 
 void put_mlq_proc(struct pcb_t *proc)
 {
+	// Put process to running queue
 	pthread_mutex_lock(&queue_lock);
 	if (proc->prio >= 0 && proc->prio < MAX_PRIO)
-		enqueue(&mlq_ready_queue[proc->prio], proc);
+		enqueue(&ready_queue.queue[proc->prio], proc);
 	else
-		enqueue(&mlq_ready_queue[proc->priority], proc);
+		enqueue(&ready_queue.queue[proc->priority], proc);
 	pthread_mutex_unlock(&queue_lock);
 }
 
 void add_mlq_proc(struct pcb_t *proc)
 {
+	// Add process to ready queue
 	pthread_mutex_lock(&queue_lock);
 	if (proc->prio >= 0 && proc->prio < MAX_PRIO)
-		enqueue(&mlq_ready_queue[proc->prio], proc);
+		enqueue(&ready_queue.queue[proc->prio], proc);
 	else
-		enqueue(&mlq_ready_queue[proc->priority], proc);
+		enqueue(&ready_queue.queue[proc->priority], proc);
 	pthread_mutex_unlock(&queue_lock);
 }
 
@@ -100,6 +131,12 @@ void put_proc(struct pcb_t *proc)
 void add_proc(struct pcb_t *proc)
 {
 	return add_mlq_proc(proc);
+}
+
+void finish_scheduler()
+{
+	pthread_cancel(_scheduler);
+	pthread_join(_scheduler, NULL);
 }
 #else
 struct pcb_t *get_proc(void)

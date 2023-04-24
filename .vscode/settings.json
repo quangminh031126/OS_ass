@@ -10,6 +10,15 @@
         "cpu.h": "c",
         "pthread.h": "c",
         "__availability": "c",
-        "atomic": "c"
+        "atomic": "c",
+        "__hash_table": "c",
+        "__split_buffer": "c",
+        "array": "c",
+        "bitset": "c",
+        "initializer_list": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "sched.h": "c",
+        "timer.h": "c"
     }
 }
