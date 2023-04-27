@@ -21,7 +21,6 @@ static struct mlq_ready_queue ready_queue;
 static struct queue_t ready_queue;
 #endif
 
-
 void init_scheduler(void)
 {
 #ifdef MLQ_SCHED
