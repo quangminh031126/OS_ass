@@ -10,6 +10,7 @@
         "cpu.h": "c",
         "pthread.h": "c",
         "__availability": "c",
-        "atomic": "c"
+        "atomic": "c",
+        "limits.h": "c"
     }
 }

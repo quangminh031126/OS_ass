@@ -66,7 +66,7 @@ struct page_table_t
 };
 
 /* PCB, describe information about a process */
-typedef struct pcb_t
+struct pcb_t
 {
 	uint32_t pid;					 // PID
 	uint32_t priority;				 // Prio from Process
@@ -76,6 +76,6 @@ typedef struct pcb_t
 	struct page_table_t *page_table; // Page table
 	uint32_t bp;					 // Break pointer
 	uint32_t prio;					 // Prio from config
-} pcb_t;
+};
 
 #endif
