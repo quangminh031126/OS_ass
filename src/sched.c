@@ -74,7 +74,7 @@ void put_mlq_proc(struct pcb_t *proc)
 	if (!proc)
 		return;
 	pthread_mutex_lock(&queue_lock);
-	if (proc->prio >= 0 && proc->prio < MAX_PRIO)
+	if (proc->prio != UINT32_MAX)
 		enqueue(&ready_queue.queue[proc->prio], proc);
 	else
 		enqueue(&ready_queue.queue[proc->priority], proc);
@@ -87,7 +87,7 @@ void add_mlq_proc(struct pcb_t *proc)
 	if (!proc)
 		return;
 	pthread_mutex_lock(&queue_lock);
-	if (proc->prio >= 0 && proc->prio < MAX_PRIO)
+	if (proc->prio != UINT32_MAX)
 		enqueue(&ready_queue.queue[proc->prio], proc);
 	else
 		enqueue(&ready_queue.queue[proc->priority], proc);

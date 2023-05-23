@@ -85,7 +85,7 @@ static void *cpu_routine(void *args)
 		{
 			printf("\tCPU %d: Dispatched process %2d\n",
 				   id, proc->pid);
-			if (proc->prio >= 0 && proc->prio < MAX_PRIO)
+			if (proc->prio != UINT32_MAX)
 				time_left = MAX_PRIO - proc->prio;
 			else
 				time_left = MAX_PRIO - proc->priority;
