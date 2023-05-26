@@ -141,12 +141,7 @@ static void read_config(const char *path)
 		exit(1);
 	}
 	fgets(line, 100, file);
-	n = sscanf(line, "%d %d %d\n", &time_slot, &num_cpus, &num_processes);
-	if (n == 2)
-	{
-		num_processes = num_cpus;
-		num_cpus = time_slot;
-	}
+	sscanf(line, "%d %d %d\n", &time_slot, &num_cpus, &num_processes);
 	ld_processes.path = (char **)malloc(sizeof(char *) * num_processes);
 	ld_processes.start_time = (unsigned long *)
 		malloc(sizeof(unsigned long) * num_processes);
@@ -225,5 +220,6 @@ int main(int argc, char *argv[])
 	/* Stop timer */
 	stop_timer();
 
+	printf("\n");
 	return 0;
 }
